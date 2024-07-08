@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Filter the output of the wp_die() screen when the login callback fails.
  *
@@ -11,14 +12,15 @@
  *
  * @return string
  */
-function example_auth0_die_on_login_output( $html, $msg, $code, $login_link ) {
-	return sprintf(
+function example_auth0_die_on_login_output($html, $msg, $code, $login_link)
+{
+	return wp_kses(sprintf(
 		'Original: <code style="display: block; background: #f1f1f1; padding: 1em; margin: 1em 0">%s</code>
 		<strong>Message: </strong> %s<br><strong>Code: </strong> %s<br><strong>Link: </strong> <code>%s</code><br>',
-		esc_html( $html ),
-		sanitize_text_field( $msg ),
-		sanitize_text_field( $code ),
+		esc_html($html),
+		sanitize_text_field($msg),
+		sanitize_text_field($code),
 		$login_link ? 'TRUE' : 'FALSE'
-	);
+	), ['code' => ['style' => true], 'strong' => [], 'br' => []]);
 }
-add_filter( 'auth0_die_on_login_output', 'example_auth0_die_on_login_output', 10, 4 );
+add_filter('auth0_die_on_login_output', 'example_auth0_die_on_login_output', 10, 4);

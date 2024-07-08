@@ -32,13 +32,13 @@
     "composer/installers": "^2.0"
   },
   "require-dev": {
-    "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
+    "dealerdirect/phpcodesniffer-composer-installer": "^1",
     "phpcompatibility/phpcompatibility-wp": "*",
-    "phpstan/phpstan": "^1.0",
-    "phpunit/phpunit": "^9.0",
-    "szepeviktor/phpstan-wordpress": "^1.0",
+    "phpstan/phpstan": "^1",
+    "phpunit/phpunit": "^9",
+    "szepeviktor/phpstan-wordpress": "^1",
     "wp-coding-standards/wpcs": "*",
-    "yoast/phpunit-polyfills": "^1.0"
+    "yoast/phpunit-polyfills": "^1"
   },
   "config": {
     "classmap-authoritative": true,

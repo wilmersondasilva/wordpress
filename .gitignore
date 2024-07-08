@@ -8,6 +8,7 @@ wp-phptidy.php
 /account_cleanup/vendor/
 /vendor/
 /rules/
+/build/
 /tests-wordpress
 /tests-wordpress-config
 .phpcs.xml
@@ -17,3 +18,4 @@ composer.local.json
 composer.local.json_
 .phpunit.result.cache
 .vscode
+private-signing-key.pem

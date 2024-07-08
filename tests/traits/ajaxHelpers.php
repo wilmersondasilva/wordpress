@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Contains Trait AjaxHelpers.
  *
@@ -10,15 +11,17 @@
 /**
  * Trait AjaxHelpers.
  */
-trait AjaxHelpers {
+trait AjaxHelpers
+{
 
 	/**
 	 * Set a filter to halt AJAX requests with an exception.
 	 * Call at the top of tests that use AJAX handler functions.
 	 */
-	public function startAjaxHalting() {
-		add_filter( 'wp_doing_ajax', '__return_true' );
-		add_filter( 'wp_die_ajax_handler', [ $this, 'startAjaxHaltingHook' ] );
+	public function startAjaxHalting()
+	{
+		add_filter('wp_doing_ajax', '__return_true');
+		add_filter('wp_die_ajax_handler', [$this, 'startAjaxHaltingHook']);
 	}
 
 	/**
@@ -26,8 +29,9 @@ trait AjaxHelpers {
 	 *
 	 * @return array
 	 */
-	public function startAjaxHaltingHook() {
-		return [ $this, 'haltAjax' ];
+	public function startAjaxHaltingHook()
+	{
+		return [$this, 'haltAjax'];
 	}
 
 	/**
@@ -40,31 +44,34 @@ trait AjaxHelpers {
 	 *
 	 * @throws Exception - Always, to stop AJAX process.
 	 */
-	public function haltAjax( $message, $title, $args ) {
-		if ( -1 === $message && ! empty( $args['response'] ) && 403 === $args['response'] && empty( $title ) ) {
+	public function haltAjax($message, $title, $args)
+	{
+		if (-1 === $message && !empty($args['response']) && 403 === $args['response'] && empty($title)) {
 			$error_msg = 'bad_nonce';
 		} else {
 			$error_msg = 'die_ajax';
 		}
-		throw new Exception( $error_msg );
+		throw new Exception(esc_html($error_msg));
 	}
 
 	/**
 	 * Remove the filter that halts AJAX requests.
 	 * Call this in a test suites tearDown method.
 	 */
-	public function stopAjaxHalting() {
-		remove_filter( 'wp_doing_ajax', '__return_true' );
-		remove_filter( 'wp_die_ajax_handler', [ $this, 'startAjaxHaltingHook' ] );
+	public function stopAjaxHalting()
+	{
+		remove_filter('wp_doing_ajax', '__return_true');
+		remove_filter('wp_die_ajax_handler', [$this, 'startAjaxHaltingHook']);
 	}
 
 	/**
 	 * Return AJAX request messages.
 	 * Call at the top of tests that use AJAX handler functions.
 	 */
-	public function startAjaxReturn() {
-		add_filter( 'wp_doing_ajax', '__return_true' );
-		add_filter( 'wp_die_ajax_handler', [ $this, 'startAjaxReturnHook' ] );
+	public function startAjaxReturn()
+	{
+		add_filter('wp_doing_ajax', '__return_true');
+		add_filter('wp_die_ajax_handler', [$this, 'startAjaxReturnHook']);
 	}
 
 	/**
@@ -72,8 +79,9 @@ trait AjaxHelpers {
 	 *
 	 * @return array
 	 */
-	public function startAjaxReturnHook() {
-		return [ $this, 'ajaxReturn' ];
+	public function startAjaxReturnHook()
+	{
+		return [$this, 'ajaxReturn'];
 	}
 
 	/**
@@ -82,16 +90,18 @@ trait AjaxHelpers {
 	 *
 	 * @param string $message - HTML to show on the wp_die page.
 	 */
-	public function ajaxReturn( $message ) {
-		echo $message;
+	public function ajaxReturn($message)
+	{
+		echo esc_js($message);
 	}
 
 	/**
 	 * Remove the filter that returns AJAX messages.
 	 * Call this in a test suites tearDown method.
 	 */
-	public function stopAjaxReturn() {
-		remove_filter( 'wp_doing_ajax', '__return_true', 10 );
-		remove_filter( 'wp_die_ajax_handler', [ $this, 'startAjaxReturnHook' ], 10 );
+	public function stopAjaxReturn()
+	{
+		remove_filter('wp_doing_ajax', '__return_true', 10);
+		remove_filter('wp_die_ajax_handler', [$this, 'startAjaxReturnHook'], 10);
 	}
 }

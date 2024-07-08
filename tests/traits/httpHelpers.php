@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Contains Trait HttpHelpers.
  *
@@ -10,7 +11,8 @@
 /**
  * Trait HttpHelpers.
  */
-trait HttpHelpers {
+trait HttpHelpers
+{
 
 	/**
 	 * Mocked HTTP response to return.
@@ -23,8 +25,9 @@ trait HttpHelpers {
 	 * Start halting all HTTP requests.
 	 * Use this at the top of tests that should check HTTP requests.
 	 */
-	public function startHttpHalting() {
-		add_filter( 'pre_http_request', [ $this, 'httpHalt' ], 1, 3 );
+	public function startHttpHalting()
+	{
+		add_filter('pre_http_request', [$this, 'httpHalt'], 1, 3);
 	}
 
 	/**
@@ -36,33 +39,36 @@ trait HttpHelpers {
 	 *
 	 * @throws Exception - Always.
 	 */
-	public function httpHalt( $preempt, $args, $url ) {
+	public function httpHalt($preempt, $args, $url)
+	{
 		$error_msg = serialize(
 			[
 				'url'     => $url,
 				'method'  => $args['method'],
 				'headers' => $args['headers'],
-				'body'    => is_string( $args['body'] ) ? json_decode( $args['body'], true ) : $args['body'],
+				'body'    => is_string($args['body']) ? json_decode($args['body'], true) : $args['body'],
 				'preempt' => $preempt,
 			]
 		);
-		throw new Exception( $error_msg );
+		throw new Exception(esc_html($error_msg));
 	}
 
 	/**
 	 * Stop halting HTTP requests.
 	 * Use this in a tearDown() method in the test suite.
 	 */
-	public function stopHttpHalting() {
-		remove_filter( 'pre_http_request', [ $this, 'httpHalt' ], 1 );
+	public function stopHttpHalting()
+	{
+		remove_filter('pre_http_request', [$this, 'httpHalt'], 1);
 	}
 
 	/**
 	 * Start mocking all HTTP requests.
 	 * Use this at the top of tests that should test behavior for different HTTP responses.
 	 */
-	public function startHttpMocking() {
-		add_filter( 'pre_http_request', [ $this, 'httpMock' ], 1, 3 );
+	public function startHttpMocking()
+	{
+		add_filter('pre_http_request', [$this, 'httpMock'], 1, 3);
 	}
 
 	/**
@@ -70,9 +76,10 @@ trait HttpHelpers {
 	 *
 	 * @return string|null
 	 */
-	public function getResponseType() {
-		if ( is_array( $this->http_request_type ) ) {
-			return array_shift( $this->http_request_type );
+	public function getResponseType()
+	{
+		if (is_array($this->http_request_type)) {
+			return array_shift($this->http_request_type);
 		}
 		return $this->http_request_type;
 	}
@@ -88,62 +95,63 @@ trait HttpHelpers {
 	 *
 	 * @throws Exception - If set to halt on response.
 	 */
-	public function httpMock( $response_type = null, array $args = null, $url = null ) {
-		switch ( $response_type ?: $this->getResponseType() ) {
+	public function httpMock($response_type = null, array $args = null, $url = null)
+	{
+		switch ($response_type ?: $this->getResponseType()) {
 
 			case 'halt':
-				$this->httpHalt( false, $args, $url );
-				return new WP_Error( 3, 'Halted.' );
+				$this->httpHalt(false, $args, $url);
+				return new WP_Error(3, 'Halted.');
 
 			case 'wp_error':
-				return new WP_Error( 1, 'Caught WP_Error.' );
+				return new WP_Error(1, 'Caught WP_Error.');
 
 			case 'auth0_api_error':
 				return [
 					'body'     => '{"statusCode":"caught_api_error","message":"Error","errorCode":"error_code"}',
-					'response' => [ 'code' => 400 ],
+					'response' => ['code' => 400],
 				];
 
 			case 'auth0_callback_error':
 				return [
 					'body'     => '{"error":"caught_callback_error","error_description":"Auth0 callback error"}',
-					'response' => [ 'code' => 400 ],
+					'response' => ['code' => 400],
 				];
 
 			case 'auth0_access_denied':
 				return [
 					'body'     => '{"error":"access_denied","error_description":"Unauthorized"}',
-					'response' => [ 'code' => 401 ],
+					'response' => ['code' => 401],
 				];
 
 			case 'other_error':
 				return [
 					'body'     => '{"other_error":"Other error"}',
-					'response' => [ 'code' => 500 ],
+					'response' => ['code' => 500],
 				];
 
 			case 'success_empty_body':
 				return [
 					'body'     => '',
-					'response' => [ 'code' => 200 ],
+					'response' => ['code' => 200],
 				];
 
 			case 'success_create_empty_body':
 				return [
 					'body'     => '',
-					'response' => [ 'code' => 201 ],
+					'response' => ['code' => 201],
 				];
 
 			case 'success_create_connection':
 				return [
 					'body'     => '{"id":"TEST_CREATED_CONN_ID"}',
-					'response' => [ 'code' => 201 ],
+					'response' => ['code' => 201],
 				];
 
 			case 'success_update_connection':
 				return [
 					'body'     => '{"id":"TEST_UPDATED_CONN_ID"}',
-					'response' => [ 'code' => 200 ],
+					'response' => ['code' => 200],
 				];
 
 			case 'success_get_connections':
@@ -154,7 +162,7 @@ trait HttpHelpers {
 						"enabled_clients":["TEST_CLIENT_ID"],
 						"options":{"passwordPolicy":"poor"}
 					}]',
-					'response' => [ 'code' => 200 ],
+					'response' => ['code' => 200],
 				];
 
 			case 'success_get_user':
@@ -170,7 +178,7 @@ trait HttpHelpers {
 					        "app_meta_key": "app_meta_value"
 					    }
 					}',
-					'response' => [ 'code' => 200 ],
+					'response' => ['code' => 200],
 				];
 
 			case 'success_access_token':
@@ -180,7 +188,7 @@ trait HttpHelpers {
 						"scope":"update:users read:users",
 						"expires_in":1000
 					}',
-					'response' => [ 'code' => 200 ],
+					'response' => ['code' => 200],
 				];
 
 			case 'success_code_exchange':
@@ -192,17 +200,17 @@ trait HttpHelpers {
 						"expires_in":86400,
 						"token_type":"Bearer"
 					}',
-					'response' => [ 'code' => 200 ],
+					'response' => ['code' => 200],
 				];
 
 			case 'success_jwks':
 				return [
 					'body'     => '{"keys":[{"x5c":["__test_x5c_1__"],"kid":"__test_kid_1__"}]}',
-					'response' => [ 'code' => 200 ],
+					'response' => ['code' => 200],
 				];
 
 			default:
-				return new WP_Error( 2, 'No mock type found.' );
+				return new WP_Error(2, 'No mock type found.');
 		}
 	}
 
@@ -210,7 +218,8 @@ trait HttpHelpers {
 	 * Stop mocking API calls.
 	 * Use this in a tearDown() method in the test suite.
 	 */
-	public function stopHttpMocking() {
-		remove_filter( 'pre_http_request', [ $this, 'httpMock' ], 1 );
+	public function stopHttpMocking()
+	{
+		remove_filter('pre_http_request', [$this, 'httpMock'], 1);
 	}
 }

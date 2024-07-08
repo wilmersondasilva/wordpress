@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Contains Class TestLoginManagerRedirectLogin.
  *
@@ -7,7 +8,8 @@
  * @since 3.11.0
  */
 
-class LoginManagerRedirectLoginTest extends WP_Auth0_Test_Case {
+class LoginManagerRedirectLoginTest extends WP_Auth0_Test_Case
+{
 
 	use HttpHelpers {
 		httpMock as protected httpMockDefault;
@@ -30,28 +32,30 @@ class LoginManagerRedirectLoginTest extends WP_Auth0_Test_Case {
 	/**
 	 * Runs before each test method.
 	 */
-	public function setUp(): void {
+	public function setUp(): void
+	{
 		parent::setUp();
-		$this->login = new WP_Auth0_LoginManager( new WP_Auth0_UsersRepo( self::$opts ), self::$opts );
+		$this->login = new WP_Auth0_LoginManager(new WP_Auth0_UsersRepo(self::$opts), self::$opts);
 
-		self::$opts->set( 'requires_verified_email', false );
+		self::$opts->set('requires_verified_email', false);
 
-		self::$users_repo = new WP_Auth0_UsersRepo( self::$opts );
+		self::$users_repo = new WP_Auth0_UsersRepo(self::$opts);
 		$users_repo       = self::$users_repo; // PHP 5.6.
-		$users_repo::update_meta( 1, 'auth0_id', 'auth0|1234567890' );
+		$users_repo::update_meta(1, 'auth0_id', 'auth0|1234567890');
 
-		add_filter( 'auth0_get_wp_user', [ $this, 'auth0_get_wp_user_handler' ], 1, 2 );
+		add_filter('auth0_get_wp_user', [$this, 'auth0_get_wp_user_handler'], 1, 2);
 
-		$this->setApiToken( 'read:users' );
+		$this->setApiToken('read:users');
 	}
 
 	/**
 	 * Runs after each test method.
 	 */
-	public function tearDown(): void {
+	public function tearDown(): void
+	{
 		parent::tearDown();
-		remove_filter( 'auth0_get_wp_user', [ $this, 'auth0_get_wp_user_handler' ], 1 );
-		remove_filter( 'auth0_use_management_api_for_userinfo', '__return_false', 10 );
+		remove_filter('auth0_get_wp_user', [$this, 'auth0_get_wp_user_handler'], 1);
+		remove_filter('auth0_use_management_api_for_userinfo', '__return_false', 10);
 	}
 
 	/**
@@ -62,15 +66,16 @@ class LoginManagerRedirectLoginTest extends WP_Auth0_Test_Case {
 	 *
 	 * @throws Exception - Always.
 	 */
-	public function auth0_get_wp_user_handler( $user, $userinfo ) {
-		throw new Exception(
+	public function auth0_get_wp_user_handler($user, $userinfo)
+	{
+		throw new Exception(esc_html(
 			serialize(
 				[
 					'user'     => $user,
 					'userinfo' => $userinfo,
 				]
 			)
-		);
+		));
 	}
 
 	/**
@@ -84,7 +89,8 @@ class LoginManagerRedirectLoginTest extends WP_Auth0_Test_Case {
 	 *
 	 * @throws Exception - If set to halt on response.
 	 */
-	public function httpMock( $response_type = null, array $args = null, $url = null ) {
+	public function httpMock($response_type = null, array $args = null, $url = null)
+	{
 		$response_type    = $response_type ?: $this->getResponseType();
 		$id_token_payload = [
 			'sub'   => '__test_id_token_sub__',
@@ -95,27 +101,27 @@ class LoginManagerRedirectLoginTest extends WP_Auth0_Test_Case {
 			'iat'   => time() - 1000,
 		];
 
-		switch ( $response_type ) {
+		switch ($response_type) {
 			case 'success_exchange_code_valid_HS_id_token':
-				$id_token = self::makeHsToken( $id_token_payload, '__test_client_secret__' );
+				$id_token = self::makeHsToken($id_token_payload, '__test_client_secret__');
 				return [
 					'body'     => sprintf(
 						'{"access_token":"__test_access_token__","id_token":"%s"}',
 						$id_token
 					),
-					'response' => [ 'code' => 200 ],
+					'response' => ['code' => 200],
 				];
 			case 'success_exchange_code_valid_RS_id_token':
-				$id_token = self::makeRsToken( $id_token_payload );
+				$id_token = self::makeRsToken($id_token_payload);
 				return [
 					'body'     => sprintf(
 						'{"access_token":"__test_access_token__","id_token":"%s"}',
 						$id_token
 					),
-					'response' => [ 'code' => 200 ],
+					'response' => ['code' => 200],
 				];
 		}
-		return $this->httpMockDefault( $response_type, $args, $url );
+		return $this->httpMockDefault($response_type, $args, $url);
 	}
 
 	/**
@@ -124,17 +130,18 @@ class LoginManagerRedirectLoginTest extends WP_Auth0_Test_Case {
 	 * @throws WP_Auth0_BeforeLoginException - Should not be encountered during this test.
 	 * @throws WP_Auth0_InvalidIdTokenException - Should not be encountered during this test.
 	 */
-	public function testThatInvalidConfigurationHaltsLogin() {
+	public function testThatInvalidConfigurationHaltsLogin()
+	{
 		$_REQUEST['code'] = uniqid();
 
 		try {
 			$this->login->redirect_login();
 			$caught_exception = false;
-		} catch ( WP_Auth0_LoginFlowValidationException $e ) {
-			$caught_exception = ( 'Error exchanging code' === $e->getMessage() );
+		} catch (WP_Auth0_LoginFlowValidationException $e) {
+			$caught_exception = ('Error exchanging code' === $e->getMessage());
 		}
 
-		$this->assertTrue( $caught_exception );
+		$this->assertTrue($caught_exception);
 	}
 
 	/**
@@ -143,21 +150,22 @@ class LoginManagerRedirectLoginTest extends WP_Auth0_Test_Case {
 	 * @throws WP_Auth0_BeforeLoginException - Should not be encountered during this test.
 	 * @throws WP_Auth0_InvalidIdTokenException - Should not be encountered during this test.
 	 */
-	public function testThatMissingCodeHaltsLogin() {
+	public function testThatMissingCodeHaltsLogin()
+	{
 		$this->startHttpMocking();
 		$this->http_request_type = 'success_code_exchange';
 
-		self::$opts->set( 'domain', 'test.auth0.com' );
-		self::$opts->set( 'client_id', '__test_client_id__' );
+		self::$opts->set('domain', 'test.auth0.com');
+		self::$opts->set('client_id', '__test_client_id__');
 
 		try {
 			$this->login->redirect_login();
 			$caught_exception = false;
-		} catch ( WP_Auth0_LoginFlowValidationException $e ) {
-			$caught_exception = ( 'Error exchanging code' === $e->getMessage() );
+		} catch (WP_Auth0_LoginFlowValidationException $e) {
+			$caught_exception = ('Error exchanging code' === $e->getMessage());
 		}
 
-		$this->assertTrue( $caught_exception );
+		$this->assertTrue($caught_exception);
 	}
 
 	/**
@@ -166,22 +174,23 @@ class LoginManagerRedirectLoginTest extends WP_Auth0_Test_Case {
 	 * @throws WP_Auth0_BeforeLoginException - Should not be encountered during this test.
 	 * @throws WP_Auth0_InvalidIdTokenException - Should not be encountered during this test.
 	 */
-	public function testThatNetworkErrorHaltsLogin() {
+	public function testThatNetworkErrorHaltsLogin()
+	{
 		$this->startHttpMocking();
 		$this->http_request_type = 'wp_error';
 
-		self::$opts->set( 'domain', 'test.auth0.com' );
-		self::$opts->set( 'client_id', '__test_client_id__' );
+		self::$opts->set('domain', 'test.auth0.com');
+		self::$opts->set('client_id', '__test_client_id__');
 		$_REQUEST['code'] = uniqid();
 
 		try {
 			$this->login->redirect_login();
 			$caught_exception = false;
-		} catch ( WP_Auth0_LoginFlowValidationException $e ) {
-			$caught_exception = ( 'Error exchanging code' === $e->getMessage() );
+		} catch (WP_Auth0_LoginFlowValidationException $e) {
+			$caught_exception = ('Error exchanging code' === $e->getMessage());
 		}
 
-		$this->assertTrue( $caught_exception );
+		$this->assertTrue($caught_exception);
 	}
 
 	/**
@@ -190,22 +199,23 @@ class LoginManagerRedirectLoginTest extends WP_Auth0_Test_Case {
 	 * @throws WP_Auth0_BeforeLoginException - Should not be encountered during this test.
 	 * @throws WP_Auth0_InvalidIdTokenException - Should not be encountered during this test.
 	 */
-	public function testThatApiErrorHaltsLogin() {
+	public function testThatApiErrorHaltsLogin()
+	{
 		$this->startHttpMocking();
 		$this->http_request_type = 'auth0_api_error';
 
-		self::$opts->set( 'domain', 'test.auth0.com' );
-		self::$opts->set( 'client_id', '__test_client_id__' );
+		self::$opts->set('domain', 'test.auth0.com');
+		self::$opts->set('client_id', '__test_client_id__');
 		$_REQUEST['code'] = uniqid();
 
 		try {
 			$this->login->redirect_login();
 			$caught_exception = false;
-		} catch ( WP_Auth0_LoginFlowValidationException $e ) {
-			$caught_exception = ( 'Error exchanging code' === $e->getMessage() );
+		} catch (WP_Auth0_LoginFlowValidationException $e) {
+			$caught_exception = ('Error exchanging code' === $e->getMessage());
 		}
 
-		$this->assertTrue( $caught_exception );
+		$this->assertTrue($caught_exception);
 	}
 
 	/**
@@ -214,54 +224,56 @@ class LoginManagerRedirectLoginTest extends WP_Auth0_Test_Case {
 	 * @throws WP_Auth0_BeforeLoginException - Should not be encountered during this test.
 	 * @throws WP_Auth0_InvalidIdTokenException - Should not be encountered during this test.
 	 */
-	public function testThatAccessDeniedLogsCorrectError() {
+	public function testThatAccessDeniedLogsCorrectError()
+	{
 		$this->startHttpMocking();
 		$this->http_request_type = 'auth0_access_denied';
 
-		self::$opts->set( 'domain', 'test.auth0.com' );
-		self::$opts->set( 'client_id', '__test_client_id__' );
+		self::$opts->set('domain', 'test.auth0.com');
+		self::$opts->set('client_id', '__test_client_id__');
 		$_REQUEST['code'] = uniqid();
 
 		try {
 			$caught_exception = false;
 			$this->login->redirect_login();
-		} catch ( WP_Auth0_LoginFlowValidationException $e ) {
-			$caught_exception = ( 'Error exchanging code' === $e->getMessage() );
+		} catch (WP_Auth0_LoginFlowValidationException $e) {
+			$caught_exception = ('Error exchanging code' === $e->getMessage());
 		}
 
-		$this->assertTrue( $caught_exception );
+		$this->assertTrue($caught_exception);
 
 		$error_log = self::$error_log->get();
-		$this->assertCount( 1, $error_log );
-		$this->assertStringContainsString( 'WP_Auth0_Api_Exchange_Code::handle_response', $error_log[0]['section'] );
-		$this->assertStringContainsString( 'Please check the Client Secret', $error_log[0]['message'] );
+		$this->assertCount(1, $error_log);
+		$this->assertStringContainsString('WP_Auth0_Api_Exchange_Code::handle_response', $error_log[0]['section']);
+		$this->assertStringContainsString('Please check the Client Secret', $error_log[0]['message']);
 	}
 
 	/**
 	 * Test that the exchange code call is formatted properly.
 	 */
-	public function testThatExchangeTokenCallIsCorrect() {
+	public function testThatExchangeTokenCallIsCorrect()
+	{
 		$this->startHttpHalting();
 
-		self::$opts->set( 'domain', 'test.auth0.com' );
-		self::$opts->set( 'client_id', '__test_client_id__' );
-		self::$opts->set( 'client_secret', '__test_client_secret__' );
+		self::$opts->set('domain', 'test.auth0.com');
+		self::$opts->set('client_id', '__test_client_id__');
+		self::$opts->set('client_secret', '__test_client_secret__');
 		$_REQUEST['code'] = uniqid();
 
 		try {
 			$http_data = [];
 			$this->login->redirect_login();
-		} catch ( Exception $e ) {
-			$http_data = unserialize( $e->getMessage() );
+		} catch (Exception $e) {
+			$http_data = unserialize($e->getMessage());
 		}
 
-		$this->assertNotEmpty( $http_data );
-		$this->assertEquals( 'https://test.auth0.com/oauth/token', $http_data['url'] );
-		$this->assertEquals( site_url( '/index.php?auth0=1' ), $http_data['body']['redirect_uri'] );
-		$this->assertEquals( $_REQUEST['code'], $http_data['body']['code'] );
-		$this->assertEquals( '__test_client_id__', $http_data['body']['client_id'] );
-		$this->assertEquals( '__test_client_secret__', $http_data['body']['client_secret'] );
-		$this->assertEquals( 'authorization_code', $http_data['body']['grant_type'] );
+		$this->assertNotEmpty($http_data);
+		$this->assertEquals('https://test.auth0.com/oauth/token', $http_data['url']);
+		$this->assertEquals(site_url('/index.php?auth0=1'), $http_data['body']['redirect_uri']);
+		$this->assertEquals($_REQUEST['code'], $http_data['body']['code']);
+		$this->assertEquals('__test_client_id__', $http_data['body']['client_id']);
+		$this->assertEquals('__test_client_secret__', $http_data['body']['client_secret']);
+		$this->assertEquals('authorization_code', $http_data['body']['grant_type']);
 	}
 
 	/**
@@ -270,14 +282,15 @@ class LoginManagerRedirectLoginTest extends WP_Auth0_Test_Case {
 	 * @throws WP_Auth0_BeforeLoginException - Should not be encountered during this test.
 	 * @throws WP_Auth0_LoginFlowValidationException - Should not be encountered during this test.
 	 */
-	public function testThatInvalidIdTokenHaltsLogin() {
+	public function testThatInvalidIdTokenHaltsLogin()
+	{
 		$this->startHttpMocking();
 		$this->http_request_type = 'success_code_exchange';
 
-		self::$opts->set( 'domain', 'test.auth0.com' );
-		self::$opts->set( 'client_id', '__test_client_id__' );
-		self::$opts->set( 'client_secret', '__test_client_secret__' );
-		self::$opts->set( 'client_signing_algorithm', 'HS256' );
+		self::$opts->set('domain', 'test.auth0.com');
+		self::$opts->set('client_id', '__test_client_id__');
+		self::$opts->set('client_secret', '__test_client_secret__');
+		self::$opts->set('client_signing_algorithm', 'HS256');
 		$_REQUEST['code'] = uniqid();
 
 		try {
@@ -285,17 +298,18 @@ class LoginManagerRedirectLoginTest extends WP_Auth0_Test_Case {
 			// Need to hide error messages here because a cookie is set.
 			// phpcs:ignore
 			@$this->login->redirect_login();
-		} catch ( WP_Auth0_InvalidIdTokenException $e ) {
+		} catch (WP_Auth0_InvalidIdTokenException $e) {
 			$e_message = $e->getMessage();
 		}
 
-		$this->assertEquals( 'ID token could not be decoded', $e_message );
+		$this->assertEquals('ID token could not be decoded', $e_message);
 	}
 
 	/**
 	 * Test that the user information is retrieved via the Management API.
 	 */
-	public function testThatGetUserCallIsCorrect() {
+	public function testThatGetUserCallIsCorrect()
+	{
 		$this->startHttpMocking();
 		$this->http_request_type = [
 			// Mocked successful code exchange with a valid ID token.
@@ -304,10 +318,10 @@ class LoginManagerRedirectLoginTest extends WP_Auth0_Test_Case {
 			'halt',
 		];
 
-		self::$opts->set( 'domain', 'test.auth0.com' );
-		self::$opts->set( 'client_id', '__test_client_id__' );
-		self::$opts->set( 'client_secret', '__test_client_secret__' );
-		self::$opts->set( 'client_signing_algorithm', 'HS256' );
+		self::$opts->set('domain', 'test.auth0.com');
+		self::$opts->set('client_id', '__test_client_id__');
+		self::$opts->set('client_secret', '__test_client_secret__');
+		self::$opts->set('client_signing_algorithm', 'HS256');
 		$_REQUEST['code']       = uniqid();
 		$_COOKIE['auth0_nonce'] = '__test_nonce__';
 
@@ -316,19 +330,20 @@ class LoginManagerRedirectLoginTest extends WP_Auth0_Test_Case {
 			// Need to hide error messages here because a cookie is set.
 			// phpcs:ignore
 			@$this->login->redirect_login();
-		} catch ( Exception $e ) {
-			$http_data = unserialize( $e->getMessage() );
+		} catch (Exception $e) {
+			$http_data = unserialize($e->getMessage());
 		}
 
-		$this->assertNotEmpty( $http_data );
-		$this->assertEquals( 'https://test.auth0.com/api/v2/users/__test_id_token_sub__', $http_data['url'] );
-		$this->assertEquals( 'Bearer __test_access_token__', $http_data['headers']['Authorization'] );
+		$this->assertNotEmpty($http_data);
+		$this->assertEquals('https://test.auth0.com/api/v2/users/__test_id_token_sub__', $http_data['url']);
+		$this->assertEquals('Bearer __test_access_token__', $http_data['headers']['Authorization']);
 	}
 
 	/**
 	 * Test that the user information is retrieved via the Management API by default.
 	 */
-	public function testThatLoginUserIsCalledWithManagementApiUserinfo() {
+	public function testThatLoginUserIsCalledWithManagementApiUserinfo()
+	{
 		$this->startHttpMocking();
 		$this->http_request_type = [
 			// Mocked successful code exchange with a valid ID token.
@@ -337,10 +352,10 @@ class LoginManagerRedirectLoginTest extends WP_Auth0_Test_Case {
 			'success_get_user',
 		];
 
-		self::$opts->set( 'domain', 'test.auth0.com' );
-		self::$opts->set( 'client_id', '__test_client_id__' );
-		self::$opts->set( 'client_secret', '__test_client_secret__' );
-		self::$opts->set( 'client_signing_algorithm', 'HS256' );
+		self::$opts->set('domain', 'test.auth0.com');
+		self::$opts->set('client_id', '__test_client_id__');
+		self::$opts->set('client_secret', '__test_client_secret__');
+		self::$opts->set('client_signing_algorithm', 'HS256');
 		$_REQUEST['code']       = uniqid();
 		$_COOKIE['auth0_nonce'] = '__test_nonce__';
 
@@ -349,22 +364,23 @@ class LoginManagerRedirectLoginTest extends WP_Auth0_Test_Case {
 			// Need to hide error messages here because a cookie is set.
 			// phpcs:ignore
 			@$this->login->redirect_login();
-		} catch ( Exception $e ) {
-			$user_data = unserialize( $e->getMessage() );
+		} catch (Exception $e) {
+			$user_data = unserialize($e->getMessage());
 		}
 
-		$this->assertTrue( $user_data['user'] instanceof WP_User );
-		$this->assertEquals( 1, $user_data['user']->ID );
-		$this->assertEquals( 'auth0|1234567890', $user_data['userinfo']->user_id );
-		$this->assertEquals( 'auth0|1234567890', $user_data['userinfo']->sub );
-		$this->assertNotEmpty( $user_data['userinfo']->user_metadata );
-		$this->assertNotEmpty( $user_data['userinfo']->app_metadata );
+		$this->assertTrue($user_data['user'] instanceof WP_User);
+		$this->assertEquals(1, $user_data['user']->ID);
+		$this->assertEquals('auth0|1234567890', $user_data['userinfo']->user_id);
+		$this->assertEquals('auth0|1234567890', $user_data['userinfo']->sub);
+		$this->assertNotEmpty($user_data['userinfo']->user_metadata);
+		$this->assertNotEmpty($user_data['userinfo']->app_metadata);
 	}
 
 	/**
 	 * Test that the user information is from the ID token if the Management API fails.
 	 */
-	public function testThatLoginUserIsCalledWithIdTokenIfNoApiAccess() {
+	public function testThatLoginUserIsCalledWithIdTokenIfNoApiAccess()
+	{
 		$this->startHttpMocking();
 		$this->http_request_type = [
 			// Mocked successful code exchange with a valid ID token.
@@ -373,10 +389,10 @@ class LoginManagerRedirectLoginTest extends WP_Auth0_Test_Case {
 			'auth0_api_error',
 		];
 
-		self::$opts->set( 'domain', 'test.auth0.com' );
-		self::$opts->set( 'client_id', '__test_client_id__' );
-		self::$opts->set( 'client_secret', '__test_client_secret__' );
-		self::$opts->set( 'client_signing_algorithm', 'HS256' );
+		self::$opts->set('domain', 'test.auth0.com');
+		self::$opts->set('client_id', '__test_client_id__');
+		self::$opts->set('client_secret', '__test_client_secret__');
+		self::$opts->set('client_signing_algorithm', 'HS256');
 		$_REQUEST['code']       = uniqid();
 		$_COOKIE['auth0_nonce'] = '__test_nonce__';
 
@@ -385,19 +401,20 @@ class LoginManagerRedirectLoginTest extends WP_Auth0_Test_Case {
 			// Need to hide error messages here because a cookie is set.
 			// phpcs:ignore
 			@$this->login->redirect_login();
-		} catch ( Exception $e ) {
-			$user_data = unserialize( $e->getMessage() );
+		} catch (Exception $e) {
+			$user_data = unserialize($e->getMessage());
 		}
 
-		$this->assertEmpty( $user_data['user'] );
-		$this->assertEquals( '__test_id_token_sub__', $user_data['userinfo']->user_id );
-		$this->assertEquals( '__test_id_token_sub__', $user_data['userinfo']->sub );
+		$this->assertEmpty($user_data['user']);
+		$this->assertEquals('__test_id_token_sub__', $user_data['userinfo']->user_id);
+		$this->assertEquals('__test_id_token_sub__', $user_data['userinfo']->sub);
 	}
 
 	/**
 	 * Test that the user information is from the ID token if migrations are being used.
 	 */
-	public function testThatLoginUserIsCalledWithIdTokenIfFilterIsSetToFalse() {
+	public function testThatLoginUserIsCalledWithIdTokenIfFilterIsSetToFalse()
+	{
 		$this->startHttpMocking();
 		$this->http_request_type = [
 			// Mocked successful code exchange with a valid ID token.
@@ -406,11 +423,11 @@ class LoginManagerRedirectLoginTest extends WP_Auth0_Test_Case {
 			'success_get_user',
 		];
 
-		self::$opts->set( 'domain', 'test.auth0.com' );
-		self::$opts->set( 'client_id', '__test_client_id__' );
-		self::$opts->set( 'client_secret', '__test_client_secret__' );
-		self::$opts->set( 'client_signing_algorithm', 'HS256' );
-		add_filter( 'auth0_use_management_api_for_userinfo', '__return_false', 10 );
+		self::$opts->set('domain', 'test.auth0.com');
+		self::$opts->set('client_id', '__test_client_id__');
+		self::$opts->set('client_secret', '__test_client_secret__');
+		self::$opts->set('client_signing_algorithm', 'HS256');
+		add_filter('auth0_use_management_api_for_userinfo', '__return_false', 10);
 		$_REQUEST['code']       = uniqid();
 		$_COOKIE['auth0_nonce'] = '__test_nonce__';
 
@@ -419,11 +436,11 @@ class LoginManagerRedirectLoginTest extends WP_Auth0_Test_Case {
 			// Need to hide error messages here because a cookie is set.
 			// phpcs:ignore
 			@$this->login->redirect_login();
-		} catch ( Exception $e ) {
-			$user_data = unserialize( $e->getMessage() );
+		} catch (Exception $e) {
+			$user_data = unserialize($e->getMessage());
 		}
 
-		$this->assertEquals( '__test_id_token_sub__', $user_data['userinfo']->user_id );
+		$this->assertEquals('__test_id_token_sub__', $user_data['userinfo']->user_id);
 	}
 
 	/**
@@ -431,7 +448,8 @@ class LoginManagerRedirectLoginTest extends WP_Auth0_Test_Case {
 	 * @throws WP_Auth0_InvalidIdTokenException Should not be thrown in this test.
 	 * @throws WP_Auth0_LoginFlowValidationException Should not be thrown in this test.
 	 */
-	public function testThatGetJwksIsCalledForRs256IdToken() {
+	public function testThatGetJwksIsCalledForRs256IdToken()
+	{
 		$this->startHttpMocking();
 		$this->http_request_type = [
 			// Mocked successful code exchange with a valid ID token.
@@ -440,22 +458,22 @@ class LoginManagerRedirectLoginTest extends WP_Auth0_Test_Case {
 			'success_jwks',
 		];
 
-		self::$opts->set( 'domain', 'test.auth0.com' );
-		self::$opts->set( 'client_id', '__test_client_id__' );
-		self::$opts->set( 'client_signing_algorithm', 'RS256' );
-		self::$opts->set( 'cache_expiration', 999999 );
+		self::$opts->set('domain', 'test.auth0.com');
+		self::$opts->set('client_id', '__test_client_id__');
+		self::$opts->set('client_signing_algorithm', 'RS256');
+		self::$opts->set('cache_expiration', 999999);
 		$_REQUEST['code']       = uniqid();
 		$_COOKIE['auth0_nonce'] = '__test_nonce__';
 		try {
 			// Need to hide error messages here because a cookie is set.
 			// phpcs:ignore
 			@$this->login->redirect_login();
-		} catch ( InvalidArgumentException $e ) {
+		} catch (InvalidArgumentException $e) {
 			// Stop process at next exception.
 		}
 
-		$cached_jwks = get_transient( WPA0_JWKS_CACHE_TRANSIENT_NAME );
+		$cached_jwks = get_transient(WPA0_JWKS_CACHE_TRANSIENT_NAME);
 
-		$this->assertArrayHasKey( '__test_kid_1__', $cached_jwks );
+		$this->assertArrayHasKey('__test_kid_1__', $cached_jwks);
 	}
 }

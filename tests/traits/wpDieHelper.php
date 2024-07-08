@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Contains Trait WpDieHelper.
  *
@@ -10,14 +11,16 @@
 /**
  * Trait WpDieHelper.
  */
-trait WpDieHelper {
+trait WpDieHelper
+{
 
 	/**
 	 * Start halting all wp_die calls.
 	 * Use this at the top of tests that should check HTTP requests.
 	 */
-	public function startWpDieHalting() {
-		add_filter( 'wp_die_handler', [ $this, 'wpDieHandler' ] );
+	public function startWpDieHalting()
+	{
+		add_filter('wp_die_handler', [$this, 'wpDieHandler']);
 	}
 
 	/**
@@ -25,8 +28,9 @@ trait WpDieHelper {
 	 *
 	 * @return array
 	 */
-	public function wpDieHandler() {
-		return [ $this, 'haltWpDie' ];
+	public function wpDieHandler()
+	{
+		return [$this, 'haltWpDie'];
 	}
 
 	/**
@@ -36,14 +40,16 @@ trait WpDieHelper {
 	 *
 	 * @throws \Exception - Always.
 	 */
-	public function haltWpDie( $html ) {
-		throw new Exception( $html );
+	public function haltWpDie($html)
+	{
+		throw new Exception(esc_html($html));
 	}
 
 	/**
 	 * Stop halting wp_die.
 	 */
-	public function stopWpDieHalting() {
-		remove_filter( 'wp_die_handler', [ $this, 'wpDieHandler' ] );
+	public function stopWpDieHalting()
+	{
+		remove_filter('wp_die_handler', [$this, 'wpDieHandler']);
 	}
 }

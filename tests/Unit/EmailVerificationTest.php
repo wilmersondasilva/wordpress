@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Contains Class TestEmailVerification.
  *
@@ -7,7 +8,8 @@
  * @since 3.8.0
  */
 
-class EmailVerificationTest extends WP_Auth0_Test_Case {
+class EmailVerificationTest extends WP_Auth0_Test_Case
+{
 
 	use AjaxHelpers;
 
@@ -38,7 +40,8 @@ class EmailVerificationTest extends WP_Auth0_Test_Case {
 	 */
 	protected static $email_verification;
 
-	public function tearDown(): void {
+	public function tearDown(): void
+	{
 		parent::tearDown();
 		WP_Auth0_Api_Client_Credentials::delete_store();
 	}
@@ -58,42 +61,43 @@ class EmailVerificationTest extends WP_Auth0_Test_Case {
 	/**
 	 * Test wp_die output when email needs to be verified.
 	 */
-	public function testWpRenderDie() {
+	public function testWpRenderDie()
+	{
 		add_filter(
 			'wp_die_handler',
-			function() {
-				return [ $this, 'wp_die_handler' ];
+			function () {
+				return [$this, 'wp_die_handler'];
 			},
 			10
 		);
 
-		$userinfo = $this->getUserinfo( 'not-auth0' );
+		$userinfo = $this->getUserinfo('not-auth0');
 
 		// 1. Check that only the default message appears if this is not an Auth0 strategy.
 		ob_start();
-		WP_Auth0_Email_Verification::render_die( $userinfo );
-		$this->assertEquals( '<p>This site requires a verified email address.</p>', ob_get_clean() );
+		WP_Auth0_Email_Verification::render_die($userinfo);
+		$this->assertEquals('<p>This site requires a verified email address.</p>', ob_get_clean());
 
 		// Set the userinfo as an Auth0 strategy.
-		$userinfo = $this->getUserinfo( 'auth0' );
+		$userinfo = $this->getUserinfo('auth0');
 
 		ob_start();
-		WP_Auth0_Email_Verification::render_die( $userinfo );
+		WP_Auth0_Email_Verification::render_die($userinfo);
 		$html = ob_get_clean();
 
 		// 2. Check that required HTML and JS elements exist
-		$this->assertStringContainsString( 'This site requires a verified email address', $html );
-		$this->assertStringContainsString( 'id="js-a0-resend-verification"', $html );
-		$this->assertStringContainsString( 'Resend verification email', $html );
-		$this->assertStringContainsString( 'var WPAuth0EmailVerification', $html );
-		$this->assertStringContainsString( 'nonce:"' . wp_create_nonce( WP_Auth0_Email_Verification::RESEND_NONCE_ACTION ) . '"', $html );
-		$this->assertStringContainsString( 'sub:"' . $userinfo->sub . '"', $html );
-		$this->assertStringContainsString( '//code.jquery.com/jquery-', $html );
-		$this->assertStringContainsString( 'assets/js/die-with-verify-email.js?ver=' . WPA0_VERSION, $html );
+		$this->assertStringContainsString('This site requires a verified email address', $html);
+		$this->assertStringContainsString('id="js-a0-resend-verification"', $html);
+		$this->assertStringContainsString('Resend verification email', $html);
+		$this->assertStringContainsString('var WPAuth0EmailVerification', $html);
+		$this->assertStringContainsString('nonce:"' . wp_create_nonce(WP_Auth0_Email_Verification::RESEND_NONCE_ACTION) . '"', $html);
+		$this->assertStringContainsString('sub:"' . $userinfo->sub . '"', $html);
+		$this->assertStringContainsString('//code.jquery.com/jquery-', $html);
+		$this->assertStringContainsString('assets/js/die-with-verify-email.js?ver=' . WPA0_VERSION, $html);
 
 		add_filter(
 			'auth0_verify_email_page',
-			function() {
+			function () {
 				return '__test_auth0_verify_email_page__';
 			},
 			10
@@ -101,65 +105,69 @@ class EmailVerificationTest extends WP_Auth0_Test_Case {
 
 		// 3. Test that the auth0_verify_email_page returns passed-in content.
 		ob_start();
-		WP_Auth0_Email_Verification::render_die( $userinfo );
-		$this->assertEquals( '__test_auth0_verify_email_page__', ob_get_clean() );
+		WP_Auth0_Email_Verification::render_die($userinfo);
+		$this->assertEquals('__test_auth0_verify_email_page__', ob_get_clean());
 	}
 
-	public function testThatResendActionFailsWhenBadAjaxNonce() {
+	public function testThatResendActionFailsWhenBadAjaxNonce()
+	{
 		$this->startAjaxHalting();
 
 		$_REQUEST['_ajax_nonce'] = uniqid();
 		try {
 			wp_auth0_ajax_resend_verification_email();
 			$error_msg = 'No exception caught';
-		} catch ( Exception $e ) {
+		} catch (Exception $e) {
 			$error_msg = $e->getMessage();
 		}
-		$this->assertEquals( 'bad_nonce', $error_msg );
+		$this->assertEquals('bad_nonce', $error_msg);
 	}
 
-	public function testThatResendActionFailsWithMissingSub() {
+	public function testThatResendActionFailsWithMissingSub()
+	{
 		$this->startAjaxHalting();
 
-		$_REQUEST['_ajax_nonce'] = wp_create_nonce( WP_Auth0_Email_Verification::RESEND_NONCE_ACTION );
+		$_REQUEST['_ajax_nonce'] = wp_create_nonce(WP_Auth0_Email_Verification::RESEND_NONCE_ACTION);
 
 		ob_start();
 		try {
 			wp_auth0_ajax_resend_verification_email();
 			$error_msg = 'No exception caught';
-		} catch ( Exception $e ) {
+		} catch (Exception $e) {
 			$error_msg = $e->getMessage();
 		}
-		$this->assertEquals( 'die_ajax', $error_msg );
-		$this->assertEquals( '{"success":false,"data":{"error":"No Auth0 user ID provided."}}', ob_get_clean() );
+		$this->assertEquals('die_ajax', $error_msg);
+		$this->assertEquals('{"success":false,"data":{"error":"No Auth0 user ID provided."}}', ob_get_clean());
 	}
 
-	public function testThatResendActionFailsWhenApiCallFails() {
+	public function testThatResendActionFailsWhenApiCallFails()
+	{
 		$this->startAjaxHalting();
 
-		$_REQUEST['_ajax_nonce'] = wp_create_nonce( WP_Auth0_Email_Verification::RESEND_NONCE_ACTION );
+		$_REQUEST['_ajax_nonce'] = wp_create_nonce(WP_Auth0_Email_Verification::RESEND_NONCE_ACTION);
 		$_POST['sub']            = $this->getUserinfo()->sub;
 
 		ob_start();
 		try {
 			wp_auth0_ajax_resend_verification_email();
 			$error_msg = 'No exception caught';
-		} catch ( Exception $e ) {
+		} catch (Exception $e) {
 			$error_msg = $e->getMessage();
 		}
-		$this->assertEquals( 'die_ajax', $error_msg );
-		$this->assertEquals( '{"success":false,"data":{"error":"API call failed."}}', ob_get_clean() );
+		$this->assertEquals('die_ajax', $error_msg);
+		$this->assertEquals('{"success":false,"data":{"error":"API call failed."}}', ob_get_clean());
 	}
 
 	/**
 	 * Test AJAX email verification send.
 	 */
-	public function testResendVerificationEmail() {
+	public function testResendVerificationEmail()
+	{
 		$this->startHttpMocking();
 		$this->startAjaxHalting();
-		$this->setApiToken( 'update:users' );
+		$this->setApiToken('update:users');
 
-		$_REQUEST['_ajax_nonce'] = wp_create_nonce( WP_Auth0_Email_Verification::RESEND_NONCE_ACTION );
+		$_REQUEST['_ajax_nonce'] = wp_create_nonce(WP_Auth0_Email_Verification::RESEND_NONCE_ACTION);
 		$_POST['sub']            = $this->getUserinfo()->sub;
 		$this->http_request_type = 'success_create_empty_body';
 
@@ -167,12 +175,12 @@ class EmailVerificationTest extends WP_Auth0_Test_Case {
 		try {
 			wp_auth0_ajax_resend_verification_email();
 			$error_msg = 'No exception caught';
-		} catch ( Exception $e ) {
+		} catch (Exception $e) {
 			$error_msg = $e->getMessage();
 		}
-		$this->assertEquals( 'die_ajax', $error_msg );
+		$this->assertEquals('die_ajax', $error_msg);
 
-		$this->assertEquals( '{"success":true}', ob_get_clean() );
+		$this->assertEquals('{"success":true}', ob_get_clean());
 	}
 
 	/**
@@ -181,7 +189,8 @@ class EmailVerificationTest extends WP_Auth0_Test_Case {
 	 *
 	 * @param string $message - HTML to show on the wp_die page.
 	 */
-	public function wp_die_handler( $message ) {
-		echo $message;
+	public function wp_die_handler($message)
+	{
+		echo wp_kses($message, ['p' => [], 'a' => ['href' => []]]);
 	}
 }

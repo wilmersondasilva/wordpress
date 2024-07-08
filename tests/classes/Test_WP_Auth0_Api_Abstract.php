@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Contains Class Test_WP_Auth0_Api_Abstract.
  *
@@ -11,7 +12,8 @@
  * Class Test_WP_Auth0_Api_Abstract.
  * Used to test WP_Auth0_Api_Abstract with a few additional helper functions.
  */
-class Test_WP_Auth0_Api_Abstract extends WP_Auth0_Api_Abstract {
+class Test_WP_Auth0_Api_Abstract extends WP_Auth0_Api_Abstract
+{
 
 	/**
 	 * HTTP method to use.
@@ -27,11 +29,12 @@ class Test_WP_Auth0_Api_Abstract extends WP_Auth0_Api_Abstract {
 	 *
 	 * @throws Exception - When HTTP method is not set.
 	 */
-	public function call() {
-		if ( empty( $this->http_method ) ) {
-			throw new Exception( 'No HTTP method set. Call $this->set_http_method() first.' );
+	public function call()
+	{
+		if (empty($this->http_method)) {
+			throw new Exception('No HTTP method set. Call $this->set_http_method() first.');
 		}
-		return $this->{$this->http_method}()->handle_response( __METHOD__ );
+		return $this->{$this->http_method}()->handle_response(__METHOD__);
 	}
 
 	/**
@@ -41,12 +44,13 @@ class Test_WP_Auth0_Api_Abstract extends WP_Auth0_Api_Abstract {
 	 *
 	 * @return boolean
 	 */
-	public function handle_response( $method ) {
-		if ( $this->handle_wp_error( $method ) ) {
+	public function handle_response($method)
+	{
+		if ($this->handle_wp_error($method)) {
 			return 'caught_wp_error';
 		}
 
-		if ( $this->handle_failed_response( $method ) ) {
+		if ($this->handle_failed_response($method)) {
 			return 'caught_failed_response';
 		}
 
@@ -63,9 +67,10 @@ class Test_WP_Auth0_Api_Abstract extends WP_Auth0_Api_Abstract {
 	 *
 	 * @throws Exception - If the method does not exist.
 	 */
-	public function set_http_method( $method ) {
-		if ( ! method_exists( $this, $method ) ) {
-			throw new Exception( 'Method ' . $method . ' does not exist.' );
+	public function set_http_method($method)
+	{
+		if (!method_exists($this, $method)) {
+			throw new Exception(esc_html('Method ' . $method . ' does not exist.'));
 		}
 		$this->http_method = $method;
 		return $this;
@@ -78,12 +83,13 @@ class Test_WP_Auth0_Api_Abstract extends WP_Auth0_Api_Abstract {
 	 *
 	 * @return array|mixed
 	 */
-	public function get_request( $key = null ) {
+	public function get_request($key = null)
+	{
 		$request = array(
 			'body'    => $this->body,
 			'headers' => $this->headers,
 			'url'     => $this->build_url(),
 		);
-		return $key && array_key_exists( $key, $request ) ? $request[ $key ] : $request;
+		return $key && array_key_exists($key, $request) ? $request[$key] : $request;
 	}
 }

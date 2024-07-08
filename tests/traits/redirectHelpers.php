@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Contains Trait RedirectHelpers.
  *
@@ -10,14 +11,16 @@
 /**
  * Trait RedirectHelpers.
  */
-trait RedirectHelpers {
+trait RedirectHelpers
+{
 
 	/**
 	 * Start halting all redirects.
 	 * Use this at the top of tests that should check redirects.
 	 */
-	public function startRedirectHalting() {
-		add_filter( 'wp_redirect', [ $this, 'haltRedirect' ], 1, 2 );
+	public function startRedirectHalting()
+	{
+		add_filter('wp_redirect', [$this, 'haltRedirect'], 1, 2);
 	}
 
 	/**
@@ -28,21 +31,23 @@ trait RedirectHelpers {
 	 *
 	 * @throws Exception - Always.
 	 */
-	public function haltRedirect( $location, $status ) {
+	public function haltRedirect($location, $status)
+	{
 		$error_msg = serialize(
 			[
 				'location' => $location,
 				'status'   => $status,
 			]
 		);
-		throw new Exception( $error_msg );
+		throw new Exception(esc_html($error_msg));
 	}
 
 	/**
 	 * Stop halting redirects.
 	 * Use this in a tearDown() method in the test suite.
 	 */
-	public function stopRedirectHalting() {
-		remove_filter( 'wp_redirect', [ $this, 'haltRedirect' ], 1 );
+	public function stopRedirectHalting()
+	{
+		remove_filter('wp_redirect', [$this, 'haltRedirect'], 1);
 	}
 }
