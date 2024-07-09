@@ -1,5 +1,18 @@
 # Change Log
 
+## [4.6.1](https://github.com/auth0/wp-auth0/tree/4.6.1) (2024-07-08)
+
+[Full Changelog](https://github.com/auth0/wp-auth0/compare/4.6.0...4.6.1)
+
+**Changed**
+
+- Tested against WordPress 6.5.5 w/ PHP 8.3.
+- Improved translated string handling.
+
+**Fixed**
+
+- Resolved issue with `?wle` parameter handling.
+
 ## [4.6.0](https://github.com/auth0/wp-auth0/tree/4.6.0) (2024-01-11)
 
 [Full Changelog](https://github.com/auth0/wp-auth0/compare/4.5.0...4.6.0)
@@ -9,6 +22,7 @@
 - Add support for Wordpress 'reauth' [\#877](https://github.com/auth0/wordpress/pull/877) ([PeterGFernandez](https://github.com/PeterGFernandez))
 
 **Changed**
+
 - PHP 8.0+ compatibility improvements [\#878](https://github.com/auth0/wordpress/pull/878) ([PeterGFernandez](https://github.com/PeterGFernandez))
 - Remove Initial Setup Wizard [\#886](https://github.com/auth0/wordpress/pull/886) ([evansims](https://github.com/evansims))
 
