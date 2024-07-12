@@ -1,6 +1,8 @@
 # Change Log
 
-## [Unreleased]
+## [4.6.2](https://github.com/auth0/wp-auth0/tree/4.6.2) (2024-07-09)
+
+[Full Changelog](https://github.com/auth0/wp-auth0/compare/4.6.1...4.6.2)
 
 **Fixed**
 
