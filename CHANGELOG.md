@@ -1,5 +1,11 @@
 # Change Log
 
+## [Unreleased]
+
+**Fixed**
+
+- Resolved an issue with corrupted JSON payloads.
+
 ## [4.6.1](https://github.com/auth0/wp-auth0/tree/4.6.1) (2024-07-08)
 
 [Full Changelog](https://github.com/auth0/wp-auth0/compare/4.6.0...4.6.1)
@@ -11,7 +17,7 @@
 
 **Fixed**
 
-- Resolved issue with `?wle` parameter handling.
+- Resolved [CVE-2023-6813](ttps://github.com/auth0/wordpress/security/advisories/GHSA-x6p7-44rh-m3rr) involving a sanitization issue with `?wle` parameter.
 
 ## [4.6.0](https://github.com/auth0/wp-auth0/tree/4.6.0) (2024-01-11)
 
