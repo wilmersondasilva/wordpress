@@ -51,6 +51,6 @@ class WP_Auth0_Email_Verification
 
 		$html = apply_filters('auth0_verify_email_page', $html, $userinfo, '');
 
-		wp_die(wp_kses($html, ['p' => [], 'a' => ['id' => true, 'href' => true], 'script' => ['src' => true]]));
+		wp_die(wp_kses_post($html));
 	}
 }

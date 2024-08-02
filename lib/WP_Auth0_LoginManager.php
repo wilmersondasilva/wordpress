@@ -616,7 +616,7 @@ class WP_Auth0_LoginManager
 
 		$html = apply_filters('auth0_die_on_login_output', esc_html($html), esc_html($msg), esc_html($code), false);
 
-		wp_die(wp_kses($html, ['br' => [], 'a' => ['href' => []]]));
+		wp_die(wp_kses_post($html));
 	}
 
 	/**
